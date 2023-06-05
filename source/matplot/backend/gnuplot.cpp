@@ -8,7 +8,9 @@
 #include <iostream>
 #include <matplot/util/common.h>
 #include <matplot/util/popen.h>
+#include <poll.h>
 #include <regex>
+#include <stdio.h>
 #include <thread>
 
 #ifdef __has_include
@@ -37,6 +39,25 @@ static size_t gnuplot_pipe_capacity(FILE *) {
 }
 
 #endif // MATPLOT_HAS_FBUFSIZE
+
+// Modified from https://stackoverflow.com/a/57959507, under CC BY-SA 4.0 - by
+// Tavian Barnes.
+// Note: might only work on Linux, will probably not work on Windows...
+static bool is_pipe_closed(int fd) {
+    struct pollfd pfd = {
+        .fd = fd,
+        .events = POLLOUT, // if writing is possible, reader is still alive
+        .revents = {},
+    };
+
+    if (poll(&pfd, 1, 1) < 0) {
+        // poll error; pipe might be closed but we don't know (could be ENOMEM or EINTR)
+        return false;
+    }
+
+    // POLLERR will be set if the read end of the pipe was closed, see poll(2)
+    return pfd.revents & POLLERR;
+}
 
 namespace matplot::backend {
     bool gnuplot::consumes_gnuplot_commands() { return true; }
@@ -83,6 +104,10 @@ namespace matplot::backend {
                 << "Please install gnuplot 5.2.6+: http://www.gnuplot.info"
                 << std::endl;
         }
+
+        // exit gnuplot process when user closes the plot window. part of backend::should_close()
+        // implementation.
+        run_command("bind Close 'exit gnuplot'");
     }
 
     gnuplot::~gnuplot() {
@@ -94,9 +119,13 @@ namespace matplot::backend {
                                             time_since_last_flush);
             }
         }
-        flush_commands();
-        run_command("exit");
-        flush_commands();
+        if (!is_pipe_closed(::fileno(pipe_))) {
+            // only flush if pipe isn't already closed
+            // TODO: if we are already using pipes, maybe we should also handle SIGPIPE, or at least ignore it
+            flush_commands();
+            run_command("exit");
+            flush_commands();
+        }
         if (pipe_) {
             PCLOSE(pipe_);
         }
@@ -287,6 +316,14 @@ namespace matplot::backend {
             std::cout << "\n\n\n\n" << std::endl;
         }
         return true;
+    }
+
+    bool gnuplot::should_close() {
+        if (!pipe_) {
+            // TBD: is this the correct(TM) thing to do?
+            return false;
+        }
+        return is_pipe_closed(::fileno(pipe_));
     }
 
     bool gnuplot::supports_fonts() {

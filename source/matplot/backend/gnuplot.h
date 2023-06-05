@@ -32,6 +32,7 @@ namespace matplot::backend {
         void height(unsigned int new_height) override;
         bool new_frame() override;
         bool render_data() override;
+        bool should_close() override;
         bool supports_fonts() override;
 
       public:
