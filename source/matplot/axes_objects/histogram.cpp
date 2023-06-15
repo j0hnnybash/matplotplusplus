@@ -7,6 +7,7 @@
 #include <matplot/axes_objects/histogram.h>
 #include <matplot/core/axes_type.h>
 #include <matplot/util/common.h>
+#include <numeric>
 #include <sstream>
 
 namespace matplot {
@@ -35,6 +36,18 @@ namespace matplot {
         : axes_object(parent), data_(data),
           bin_edges_(edges), binning_mode_{binning_mode_type::use_fixed_edges},
           normalization_{normalization_alg} {
+        if (parent_->y_axis().limits_mode_auto()) {
+            parent_->y_axis().limits({0, inf});
+        }
+    }
+
+    histogram::histogram(class axes_type *parent,
+                         const std::vector<size_t> &bins,
+                         const std::vector<double> &edges,
+                         enum histogram::normalization normalization_alg)
+        : axes_object(parent), bin_counts_(bins), bin_edges_(edges), binning_mode_{binning_mode_type::use_fixed_edges}, normalization_{normalization_alg} {
+        size_t sample_count = std::reduce(bin_counts_.begin(), bin_counts_.end());
+        values_ = histogram_normalize(bin_counts_, bin_edges_, sample_count, normalization_);
         if (parent_->y_axis().limits_mode_auto()) {
             parent_->y_axis().limits({0, inf});
         }

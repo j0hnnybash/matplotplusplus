@@ -52,6 +52,11 @@ namespace matplot {
                   const std::vector<double> &edges,
                   enum histogram::normalization normalization_alg =
                       histogram::normalization::count);
+        histogram(class axes_type *parent,
+                  const std::vector<size_t> &bins,
+                  const std::vector<double> &edges,
+                  enum histogram::normalization normalization_alg =
+                  histogram::normalization::count);
         histogram(class axes_type *parent, const std::vector<double> &data,
                   binning_algorithm algorithm = binning_algorithm::automatic,
                   histogram::normalization normalization_alg =
