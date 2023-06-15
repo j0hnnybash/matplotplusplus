@@ -1024,6 +1024,13 @@ namespace matplot {
         histogram_handle hist(const std::vector<double> &data,
                               const std::vector<double> &edges);
 
+        /// Histogram - Fixed edges, prebinned
+        // Note: This is not an overload of hist(), in order to avoid
+        // collisions with the templated conversion overloads.
+        // FIXME: isnt this essentially a bar graph? Although matlab explicitly supports prebinned histograms with essentially this interface...
+        histogram_handle hist_bins(const std::vector<size_t> &bins,
+                              const std::vector<double> &edges);
+
         /// Histogram - Normalization algorithm
         histogram_handle hist(const std::vector<double> &data,
                               enum histogram::normalization normalization_alg);
@@ -1310,6 +1317,10 @@ namespace matplot {
         /// Polar histogram - Core function
         histogram_handle polarhistogram(const std::vector<double> &theta,
                                         size_t nbins);
+
+        /// Polar histogram - prebinned over [0,2pi]
+        // FIXME: maybe add a polarbar() plot instead.
+        histogram_handle polarhistogram_bins(const std::vector<size_t> &bins);
 
         /// Polar plot - Core function
         line_handle polarplot(const std::vector<double> &theta,

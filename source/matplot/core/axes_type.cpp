@@ -2817,6 +2817,16 @@ namespace matplot {
         return l;
     }
 
+    /// Histogram - Fixed edges, prebinned
+    histogram_handle axes_type::hist_bins(const std::vector<size_t> &bins,
+                                     const std::vector<double> &edges) {
+        axes_silencer temp_silencer_{this};
+        histogram_handle l =
+            std::make_shared<class histogram>(this, bins, edges);
+        this->emplace_object(l);
+        return l;
+    }
+
     /// Histogram - Normalization algorithm
     histogram_handle
     axes_type::hist(const std::vector<double> &data,
@@ -4344,6 +4354,27 @@ namespace matplot {
         this->t_axis().tick_length(0);
 
         return h;
+    }
+
+    // Polar histogram - prebinned
+    histogram_handle axes_type::polarhistogram_bins(const std::vector<size_t> &bins) {
+        axes_silencer temp_silencer_{this};
+
+        auto edges = linspace(0., 2 * pi, bins.size() + 1);
+
+        histogram_handle h = this->hist_bins(bins, edges);
+        h->polar(true);
+        this->axis(equal);
+
+        this->x_axis().visible(false);
+        this->y_axis().visible(false);
+        this->r_axis().visible(false);
+        this->r_axis().tick_length(0.);
+        this->t_axis().visible(true);
+        this->t_axis().tick_length(0);
+
+        return h;
+
     }
 
     /// Polar plot - Core function
