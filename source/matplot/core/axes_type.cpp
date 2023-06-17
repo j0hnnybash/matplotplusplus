@@ -5602,5 +5602,36 @@ namespace matplot {
         // draw the normalized path to the backend
         parent_->backend_->draw_path(cx, cy, color);
     }
+    void axes_type::draw_rectangle(const double x1, const double x2,
+                                   const double y1, const double y2,
+                                   const std::array<float, 4> &color) {
+        // we still have to make limits calculate and return the
+        // automatic limits rather than the default limits
+        auto xlimits = xlim();
+        auto ylimits = ylim();
+        // clamp
+        double cx1 = std::clamp(x1, xlimits[0], xlimits[1]);
+        double cx2 = std::clamp(x2, xlimits[0], xlimits[1]);
+        double cy1 = std::clamp(y1, xlimits[0], xlimits[1]);
+        double cy2 = std::clamp(y2, xlimits[0], xlimits[1]);
+        // normalize
+        auto [w, h, lm, rm, bm, tm] = calculate_margins();
+        double view_width = parent_->backend_->width();
+        double view_xmin = lm * view_width;
+        double view_xmax = rm * view_width;
+        double view_height = parent_->backend_->height();
+        double view_ymin = bm * view_height;
+        double view_ymax = tm * view_height;
+        auto transform_value = [](auto limits, double view_min, double view_max, double v) {
+            // transform v into limit relative coordinates, then transform to view coordinates
+            return  view_min + (view_max - view_min) * (v - limits[0]) / (limits[1] - limits[0]);
+        };
+        cx1 = transform_value(xlimits, view_xmin, view_xmax, cx1);
+        cx2 = transform_value(xlimits, view_xmin, view_xmax, cx2);
+        cy1 = transform_value(ylimits, view_ymin, view_ymax, cy1);
+        cy2 = transform_value(ylimits, view_ymin, view_ymax, cy2);
+        // draw the normalized path to the backend
+        parent_->backend_->draw_rectangle(cx1, cx2, cy1, cy2, color);
+    }
 
 } // namespace matplot

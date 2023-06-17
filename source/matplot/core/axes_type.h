@@ -2777,6 +2777,10 @@ namespace matplot {
         void draw_path(const std::vector<double> &x,
                        const std::vector<double> &y,
                        const std::array<float, 4> &color);
+        void draw_rectangle(const double x1, const double x2,
+                            const double y1, const double y2,
+                            const std::array<float, 4> &color);
+
 
       private /* members */:
         // axes
