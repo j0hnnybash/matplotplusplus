@@ -64,6 +64,21 @@ namespace matplot {
             parent_->y_axis().limits({0, inf});
         }
     }
+    void histogram::run_draw_commands() {
+        maybe_update_face_color();
+        // FIXME: polar plot not implemented and ignored, the same goes for stairs only
+        for (size_t i = 0; i < values_.size(); ++i) {
+            const double interval_width = bin_edges_[i + 1] - bin_edges_[i];
+            const double margin = interval_width * (1 - bar_width_) / 2.; // maybe negative
+
+            const double bl_x = bin_edges_[i] + margin;
+            const double bl_y = 0.;
+            const double tr_x = bin_edges_[i+1] - margin;
+            const double tr_y = values_[i];
+            // FIXME: edge color not implemented
+            parent_->draw_rectangle(bl_x, tr_x, bl_y, tr_y, face_color_);
+        }
+    }
 
     std::string histogram::plot_string() {
         maybe_update_face_color();
