@@ -45,11 +45,9 @@ namespace matplot {
                          const std::vector<size_t> &bins,
                          const std::vector<double> &edges,
                          enum histogram::normalization normalization_alg)
-        : axes_object(parent), bin_counts_(bins), bin_edges_(edges), binning_mode_{binning_mode_type::use_fixed_edges}, normalization_{normalization_alg} {
-        size_t sample_count = std::reduce(bin_counts_.begin(), bin_counts_.end());
-        values_ = histogram_normalize(bin_counts_, bin_edges_, sample_count, normalization_);
+        : axes_object(parent), bin_counts_(bins), bin_edges_(edges), binning_mode_{binning_mode_type::use_precounted_bins}, normalization_{normalization_alg} {
         if (parent_->y_axis().limits_mode_auto()) {
-            parent_->y_axis().limits({0, inf});
+             parent_->y_axis().limits({0, inf});
         }
     }
 
@@ -281,13 +279,18 @@ namespace matplot {
                     [&](double x) { return left_edge + x * bin_width_; });
                 break;
             }
-            case binning_mode_type::use_fixed_edges: {
+            case binning_mode_type::use_fixed_edges: [[fallthrough]];
+            case binning_mode_type::use_precounted_bins: {
                 break;
             }
             }
-            bin_counts_ = histogram_count(data_, bin_edges_);
-            values_ = histogram_normalize(bin_counts_, bin_edges_, data_.size(),
-                                          normalization_);
+            if (binning_mode_ == binning_mode_type::use_precounted_bins) {
+                size_t sample_count = std::reduce(bin_counts_.begin(), bin_counts_.end());
+                values_ = histogram_normalize(bin_counts_, bin_edges_, sample_count, normalization_);
+            } else {
+                bin_counts_ = histogram_count(data_, bin_edges_);
+                values_ = histogram_normalize(bin_counts_, bin_edges_, data_.size(), normalization_);
+            }
         }
     }
 

@@ -242,6 +242,8 @@ namespace matplot {
             use_fixed_bin_width, // use fixed num of bins
             use_fixed_edges,     // use fixed edges, including edges of variable
                                  // size
+            use_precounted_bins, // use fixed edges, but additionally
+                                 // with user-provided bin counts
         };
         binning_mode_type binning_mode_{binning_mode_type::use_algorithm};
 
