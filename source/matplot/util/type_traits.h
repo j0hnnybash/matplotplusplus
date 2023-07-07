@@ -10,45 +10,23 @@
 #include <vector>
 
 namespace matplot {
-    template <typename C> struct is_iterable {
-        typedef long false_type;
-        typedef char true_type;
+    template<typename T, typename=void>
+    struct is_iterable : std::false_type{};
 
-        template <class T> static false_type check(...);
-        template <class T>
-        static true_type check(int, typename T::const_iterator = C().end());
-
-        enum { value = sizeof(check<C>(0)) == sizeof(true_type) };
-    };
+    template <typename T>
+    struct is_iterable<T, std::void_t<decltype(std::begin(std::declval<T&>()) != std::end(std::declval<T&>())),
+                                      decltype(++std::declval<decltype(std::begin(std::declval<T&>()))&>()),
+                                      decltype(*std::begin(std::declval<T&>()))>>
+        : std::true_type {};
 
     template <typename C> constexpr bool is_iterable_v = is_iterable<C>::value;
 
-    template <typename C> struct has_value_type {
-        typedef long false_type;
-        typedef char true_type;
+    template<typename T, typename=void>
+    struct has_iterable_value_type : std::false_type{};
 
-        template <class T> static false_type check(...);
-        template <class T>
-        static true_type check(int, typename T::value_type = *C().begin());
-
-        enum { value = sizeof(check<C>(0)) == sizeof(true_type) };
-    };
-
-    template <typename C>
-    constexpr bool has_value_type_v = has_value_type<C>::value;
-
-    template <typename C> struct has_iterable_value_type {
-        typedef long false_type;
-        typedef char true_type;
-
-        template <class T> static false_type check(...);
-        template <class T>
-        static true_type
-        check(int,
-              typename T::value_type::value_type = *(C().begin()->begin()));
-
-        enum { value = sizeof(check<C>(0)) == sizeof(true_type) };
-    };
+    template<typename T>
+    struct has_iterable_value_type<T, std::enable_if_t<is_iterable<typename decltype(std::begin(std::declval<T&>()))::value_type>::value>>
+        : std::true_type {};
 
     template <typename C>
     constexpr bool has_iterable_value_type_v =
