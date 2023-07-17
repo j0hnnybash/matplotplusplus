@@ -93,7 +93,7 @@ namespace matplot {
 
         /// \brief Create new axes in a subplot covering all positions in P
         axes_handle add_subplot(size_t rows, size_t cols,
-                                std::initializer_list<size_t> P,
+                                std::vector<size_t> P,
                                 bool replace_if_same_position = false);
 
         /// \brief Create new subplot in a specific position

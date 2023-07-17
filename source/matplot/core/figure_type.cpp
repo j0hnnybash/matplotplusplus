@@ -428,7 +428,7 @@ namespace matplot {
 
     axes_handle
     figure_type::add_subplot(size_t rows, size_t cols,
-                             std::initializer_list<size_t> positions,
+                             std::vector<size_t> positions,
                              bool replace_if_same_position) {
         if (rows == 1 && cols == 1 && positions.size() == 1 &&
             *positions.begin() == 1) {
