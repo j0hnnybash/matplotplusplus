@@ -61,8 +61,12 @@ namespace matplot {
     }
 
     std::string run_and_get_output(const std::string &cmd) {
+#pragma GCC diagnostic warning "-Wignored-attributes"
+#pragma GCC diagnostic push
         std::unique_ptr<FILE, decltype(&PCLOSE)> pipe(POPEN(cmd.c_str(), "r"),
                                                       PCLOSE);
+#pragma GCC diagnostic pop
+
         if (!pipe) {
             throw std::runtime_error("popen() failed!");
         }
